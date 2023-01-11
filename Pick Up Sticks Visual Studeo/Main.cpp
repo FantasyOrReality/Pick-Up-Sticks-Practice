@@ -1,6 +1,9 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <vector>
+#include <stdlib.h>
+#include <time.h>
+
 
 int main()
 {
@@ -52,8 +55,36 @@ int main()
         grassSpriteVector.push_back(grassSprite);
     }
 
-    //position
+    //player position
     playerSprite.setPosition(sf::Vector2f(0.0f, 100.0f));
+
+    //grass positions
+    int maxX;
+    int maxY;
+    int minX;
+    int minY;
+
+    int randomX;
+    int randomY;
+    srand(time(nullptr));
+
+    maxX = window.getSize().x;
+    maxY = window.getSize().y;
+
+    minX = 0;
+    minY = 0;
+
+    randomX = rand() % (maxX-minX);
+    randomY = rand() % (maxY - minY);
+
+
+    for (int i = 0; i <= 5; ++i)
+    {
+        grassSprite.setPosition(sf::Vector2f(randomX, randomY));
+    }
+
+
+
 
 #pragma endregion
 
