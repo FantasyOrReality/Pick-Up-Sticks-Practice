@@ -75,6 +75,10 @@ int main()
         //random grass tint
         grassSprite.setColor(sf::Color(rand() % (255-0), rand() % (255 - 0), rand() % (255 - 0)));
 
+        //random grass scale
+
+        grassSprite.setScale((rand() % (20 - 5)/10.0f),(rand() % (20 - 5))/10.0f);
+
         //grass position and pushback
         grassSprite.setPosition(sf::Vector2f(rand() % (window.getSize().x - grassTexture.getSize().x), rand() % (window.getSize().y - grassTexture.getSize().y)));
         grassSpriteVector.push_back(grassSprite);
@@ -82,15 +86,28 @@ int main()
 
     //stick sprite vector
     std::vector<sf::Sprite> stickSpriteVector;
+    
+    //random stick position
     stickSprite.setPosition(sf::Vector2f(rand() % (window.getSize().x - stickTexture.getSize().x), rand() % (window.getSize().y - stickTexture.getSize().y)));
+    
+    //random stick rotation
+    stickSprite.setRotation(rand() % (355 - 1));
+
     stickSpriteVector.push_back(stickSprite);
+
+
 
     //player position
     playerSprite.setPosition(sf::Vector2f(0.0f, 100.0f));
 
+    //player rotation
+    //playerSprite.setRotation(270);
 
-    //player colour
-    playerSprite.setColor(sf::Color(0, 0, 0));
+    //player scale
+    //playerSprite.setScale(3.0f,3.0f);
+
+    //Origin
+    playerSprite.setOrigin(playerTexture.getSize().x/2, playerTexture.getSize().y/2);
 
 #pragma endregion
 
