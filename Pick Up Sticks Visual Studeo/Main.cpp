@@ -42,6 +42,20 @@ int main()
 
     }
 
+    sf::Texture stickTexture;
+    if (!stickTexture.loadFromFile("Assets/Stick.png"))
+    {
+        //error
+        std::cout << "Texture load failed for Assets/Stick.png" << std::endl;
+
+    }
+    else
+    {
+        //success
+        std::cout << "Texture load successful for Assets/Stick.png" << std::endl;
+
+    }
+
     //player sprite
     sf::Sprite playerSprite;
     playerSprite.setTexture(playerTexture);
@@ -50,6 +64,10 @@ int main()
     sf::Sprite grassSprite;
     grassSprite.setTexture(grassTexture);
 
+    //stick sprite
+    sf::Sprite stickSprite;
+    stickSprite.setTexture(stickTexture);
+
     //grass sprite vector
     std::vector<sf::Sprite> grassSpriteVector;
     for (int i = 0; i <= 5; i++)
@@ -57,6 +75,11 @@ int main()
         grassSprite.setPosition(sf::Vector2f(rand() % (window.getSize().x - grassTexture.getSize().x), rand() % (window.getSize().y - grassTexture.getSize().y)));
         grassSpriteVector.push_back(grassSprite);
     }
+
+    //stick sprite vector
+    std::vector<sf::Sprite> stickSpriteVector;
+    stickSprite.setPosition(sf::Vector2f(rand() % (window.getSize().x - stickTexture.getSize().x), rand() % (window.getSize().y - stickTexture.getSize().y)));
+    stickSpriteVector.push_back(stickSprite);
 
     //player position
     playerSprite.setPosition(sf::Vector2f(0.0f, 100.0f));
@@ -97,6 +120,12 @@ int main()
         for (int i = 0; i < grassSpriteVector.size(); ++i)
         {
             window.draw(grassSpriteVector[i]);
+        }
+
+        //stick sprites
+        for (int i = 0; i < stickSpriteVector.size(); ++i)
+        {
+            window.draw(stickSpriteVector[i]);
         }
 
         //player sprite
