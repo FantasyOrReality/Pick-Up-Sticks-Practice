@@ -109,6 +109,25 @@ int main()
     //Origin
     playerSprite.setOrigin(playerTexture.getSize().x/2, playerTexture.getSize().y/2);
 
+    //Load fonts
+    sf::Font gameFont;
+    gameFont.loadFromFile("Assets/GameFont.ttf");
+
+    //Create text objects
+    sf::Text gameTitle;
+    gameTitle.setFont(gameFont);
+    gameTitle.setString("Pick Up Sticks");
+    float textWidth = gameTitle.getLocalBounds().width;
+    gameTitle.setPosition((float)window.getSize().x/2.0f - textWidth/2.0f, 10.0f);
+    
+    sf::Text scoreLabel;
+    sf::Text score;
+    scoreLabel.setFont(gameFont);
+    score.setFont(gameFont);
+
+    score.setString("000");
+    scoreLabel.setString("Score:");
+
 #pragma endregion
 
 
@@ -155,6 +174,11 @@ int main()
 
         //player sprite
         window.draw(playerSprite);
+
+        //text UI
+        window.draw(scoreLabel);
+
+        window.draw(gameTitle);
 
         //display
         window.display();
