@@ -12,6 +12,8 @@ int main()
 
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Pick Up Sticks", sf::Style::None);
 
+    srand(time(NULL));
+
     sf::Texture playerTexture;
     if (!playerTexture.loadFromFile("Assets/Player_Stand.png"))
     {
@@ -52,39 +54,12 @@ int main()
     std::vector<sf::Sprite> grassSpriteVector;
     for (int i = 0; i <= 5; i++)
     {
+        grassSprite.setPosition(sf::Vector2f(rand() % (window.getSize().x - grassTexture.getSize().x), rand() % (window.getSize().y - grassTexture.getSize().y)));
         grassSpriteVector.push_back(grassSprite);
     }
 
     //player position
     playerSprite.setPosition(sf::Vector2f(0.0f, 100.0f));
-
-    //grass positions
-    int maxX;
-    int maxY;
-    int minX;
-    int minY;
-
-    int randomX;
-    int randomY;
-    srand(time(nullptr));
-
-    maxX = window.getSize().x;
-    maxY = window.getSize().y;
-
-    minX = 0;
-    minY = 0;
-
-    randomX = rand() % (maxX-minX);
-    randomY = rand() % (maxY - minY);
-
-
-    for (int i = 0; i <= 5; ++i)
-    {
-        grassSprite.setPosition(sf::Vector2f(randomX, randomY));
-    }
-
-
-
 
 #pragma endregion
 
