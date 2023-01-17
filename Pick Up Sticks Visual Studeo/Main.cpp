@@ -72,6 +72,10 @@ int main()
     std::vector<sf::Sprite> grassSpriteVector;
     for (int i = 0; i <= 5; i++)
     {
+        //random grass tint
+        grassSprite.setColor(sf::Color(rand() % (255-0), rand() % (255 - 0), rand() % (255 - 0)));
+
+        //grass position and pushback
         grassSprite.setPosition(sf::Vector2f(rand() % (window.getSize().x - grassTexture.getSize().x), rand() % (window.getSize().y - grassTexture.getSize().y)));
         grassSpriteVector.push_back(grassSprite);
     }
@@ -83,6 +87,10 @@ int main()
 
     //player position
     playerSprite.setPosition(sf::Vector2f(0.0f, 100.0f));
+
+
+    //player colour
+    playerSprite.setColor(sf::Color(0, 0, 0));
 
 #pragma endregion
 
