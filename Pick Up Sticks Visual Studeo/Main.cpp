@@ -1,9 +1,9 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <iostream>
 #include <vector>
 #include <stdlib.h>
 #include <time.h>
-
 
 int main()
 {
@@ -11,6 +11,7 @@ int main()
 
 
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Pick Up Sticks", sf::Style::None);
+    window.setVerticalSyncEnabled(true);
 
     srand(time(NULL));
 
@@ -72,24 +73,29 @@ int main()
     std::vector<sf::Sprite> grassSpriteVector;
     for (int i = 0; i <= 5; i++)
     {
+        //grass origin
+        grassSprite.setOrigin(grassTexture.getSize().x / 2, grassTexture.getSize().y / 2);
+
         //random grass tint
-        grassSprite.setColor(sf::Color(rand() % (255-0), rand() % (255 - 0), rand() % (255 - 0)));
+        grassSprite.setColor(sf::Color(rand() % (255 - 0), rand() % (255 - 0), rand() % (255 - 0)));
 
         //random grass scale
-
-        grassSprite.setScale((rand() % (20 - 5)/10.0f),(rand() % (20 - 5))/10.0f);
+        grassSprite.setScale((rand() % (20 - 5) / 10.0f), (rand() % (20 - 5)) / 10.0f);
 
         //grass position and pushback
-        grassSprite.setPosition(sf::Vector2f(rand() % (window.getSize().x - grassTexture.getSize().x), rand() % (window.getSize().y - grassTexture.getSize().y)));
+        grassSprite.setPosition(sf::Vector2f(rand() % (window.getSize().x - grassTexture.getSize().x / 2), rand() % (window.getSize().y - grassTexture.getSize().y / 2)));
         grassSpriteVector.push_back(grassSprite);
     }
 
     //stick sprite vector
     std::vector<sf::Sprite> stickSpriteVector;
-    
+
+    //stick origin
+    stickSprite.setOrigin(stickTexture.getSize().x / 2, stickTexture.getSize().y / 2);
+
     //random stick position
-    stickSprite.setPosition(sf::Vector2f(rand() % (window.getSize().x - stickTexture.getSize().x), rand() % (window.getSize().y - stickTexture.getSize().y)));
-    
+    stickSprite.setPosition(sf::Vector2f(rand() % (window.getSize().x - stickTexture.getSize().x / 2), rand() % (window.getSize().y - stickTexture.getSize().y / 2)));
+
     //random stick rotation
     stickSprite.setRotation(rand() % (355 - 1));
 
@@ -98,7 +104,44 @@ int main()
 
 
     //player position
-    playerSprite.setPosition(sf::Vector2f(0.0f, 100.0f));
+    playerSprite.setPosition(sf::Vector2f(0.0f + (playerTexture.getSize().x / 2.0f), 100.0f + (playerTexture.getSize().y / 2.0f)));
+
+    
+    //randomise player move direction
+
+    float playerMoveRangeX;
+    float playerMoveRangeY;
+    int randX;
+    int randY;
+
+    /*
+    //randomise -x or +x
+    randX = rand() % (2 - 1);
+    if (randX == 2)
+    {
+        playerMoveRangeX = 10.0f;
+    }
+    else
+    {
+        playerMoveRangeX = -10.0f;
+
+    }
+
+    //randomise -y or +y
+    randY = rand() % (2 - 1);
+    if (randY == 2)
+    {
+        playerMoveRangeY = 10.0f;
+
+    }
+    else
+    {
+        playerMoveRangeX = -10.0f;
+    }
+    */
+
+
+
 
     //player rotation
     //playerSprite.setRotation(270);
@@ -106,8 +149,8 @@ int main()
     //player scale
     //playerSprite.setScale(3.0f,3.0f);
 
-    //Origin
-    playerSprite.setOrigin(playerTexture.getSize().x/2, playerTexture.getSize().y/2);
+    //player origin
+    playerSprite.setOrigin(playerTexture.getSize().x / 2, playerTexture.getSize().y / 2);
 
     //Load fonts
     sf::Font gameFont;
@@ -117,9 +160,18 @@ int main()
     sf::Text gameTitle;
     gameTitle.setFont(gameFont);
     gameTitle.setString("Pick Up Sticks");
+
+    gameTitle.setFillColor(sf::Color::Black);
+    gameTitle.setOutlineThickness(1.0f);
+    gameTitle.setOutlineColor(sf::Color::White);
+    gameTitle.setStyle(sf::Text::Bold | sf::Text::Italic);
+    gameTitle.setCharacterSize(60);
+
     float textWidth = gameTitle.getLocalBounds().width;
-    gameTitle.setPosition((float)window.getSize().x/2.0f - textWidth/2.0f, 10.0f);
-    
+    gameTitle.setPosition((float)window.getSize().x / 2.0f - textWidth / 2.0f, 10.0f);
+
+
+
     sf::Text scoreLabel;
     sf::Text score;
     scoreLabel.setFont(gameFont);
@@ -128,8 +180,23 @@ int main()
     score.setString("000");
     scoreLabel.setString("Score:");
 
-#pragma endregion
 
+    //Setting up sound
+    sf::SoundBuffer startSFXBuffer;
+    startSFXBuffer.loadFromFile("Assets/Start.wav");
+
+    sf::Sound startSFX;
+    startSFX.setBuffer(startSFXBuffer);
+    startSFX.play();
+
+    sf::Music gameMusic;
+    gameMusic.openFromFile("Assets/MusicOGG.OGG");
+    gameMusic.setLoop(true);
+    gameMusic.play();
+
+
+#pragma endregion
+    //end setup
 
 
 #pragma region Event Polling
@@ -152,8 +219,25 @@ int main()
         }
 
 #pragma endregion
+        //End events
+
+#pragma region Updates
+        /*
+        //move in random direction
+        float currentPlayerPositionX;
+        float currentPlayerPositionY;
+
+        currentPlayerPositionX = playerSprite.getPosition().x;
+        currentPlayerPositionY = playerSprite.getPosition().y;
+
+       
+
+       //playerSprite.setPosition(sf::Vector2f(rand() % (currentPlayerPositionX + playerMoveRangeX), rand() % (currentPlayerPositionY + playerMoveRangeY)));
+        */
 
 
+#pragma endregion
+        //end updates
 
 #pragma region Drawing
 
@@ -184,7 +268,7 @@ int main()
         window.display();
 
 #pragma endregion
-
+        //end drawing
    
         
         
