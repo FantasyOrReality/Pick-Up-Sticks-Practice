@@ -4,6 +4,8 @@
 #include <vector>
 #include <stdlib.h>
 #include <time.h>
+#include <sstream>
+#include <string>
 
 int main()
 {
@@ -14,6 +16,13 @@ int main()
     window.setVerticalSyncEnabled(true);
 
     srand(time(NULL));
+
+    int playerMoveRangeX;
+    int playerMoveRangeY;
+
+    int randDirection;
+
+    randDirection = rand() % (100 - 1);
 
     sf::Texture playerTexture;
     if (!playerTexture.loadFromFile("Assets/Player_Stand.png"))
@@ -104,44 +113,20 @@ int main()
 
 
     //player position
-    playerSprite.setPosition(sf::Vector2f(0.0f + (playerTexture.getSize().x / 2.0f), 100.0f + (playerTexture.getSize().y / 2.0f)));
+    playerSprite.setPosition(sf::Vector2f(0.0f + (100.0f + playerTexture.getSize().x / 2.0f), 100.0f + (playerTexture.getSize().y / 2.0f)));
 
     
-    //randomise player move direction
-
-    float playerMoveRangeX;
-    float playerMoveRangeY;
-    int randX;
-    int randY;
-
-    /*
-    //randomise -x or +x
-    randX = rand() % (2 - 1);
-    if (randX == 2)
-    {
-        playerMoveRangeX = 10.0f;
-    }
-    else
-    {
-        playerMoveRangeX = -10.0f;
-
-    }
-
-    //randomise -y or +y
-    randY = rand() % (2 - 1);
-    if (randY == 2)
-    {
-        playerMoveRangeY = 10.0f;
-
-    }
-    else
-    {
-        playerMoveRangeX = -10.0f;
-    }
-    */
+    //count bounces
+    int bounceCountA=0;
+    int bounceCount1=0;
+    int bounceCount2=0;
+    int bounceCount3=0;
+    
 
 
 
+    //randomise 
+    
 
     //player rotation
     //playerSprite.setRotation(270);
@@ -173,11 +158,25 @@ int main()
 
 
     sf::Text scoreLabel;
-    sf::Text score;
-    scoreLabel.setFont(gameFont);
-    score.setFont(gameFont);
 
-    score.setString("000");
+    sf::Text bounceScore1;
+    sf::Text bounceScore2;
+    sf::Text bounceScore3;
+
+    scoreLabel.setFont(gameFont);
+
+    bounceScore1.setFont(gameFont);
+    bounceScore2.setFont(gameFont);
+    bounceScore3.setFont(gameFont);
+
+
+
+    //Score numbers will be presented like: |score3|score2|score1|
+    bounceScore1.setString("0");
+    bounceScore2.setString("0");
+    bounceScore3.setString("0");
+
+
     scoreLabel.setString("Score:");
 
 
@@ -185,9 +184,15 @@ int main()
     sf::SoundBuffer startSFXBuffer;
     startSFXBuffer.loadFromFile("Assets/Start.wav");
 
+    sf::SoundBuffer pickUpSFXBuffer;
+    pickUpSFXBuffer.loadFromFile("Assets/Pickup.wav");
+
     sf::Sound startSFX;
     startSFX.setBuffer(startSFXBuffer);
     startSFX.play();
+
+    sf::Sound pickUpSFX;
+    pickUpSFX.setBuffer(pickUpSFXBuffer);
 
     sf::Music gameMusic;
     gameMusic.openFromFile("Assets/MusicOGG.OGG");
@@ -222,19 +227,156 @@ int main()
         //End events
 
 #pragma region Updates
-        /*
+
         //move in random direction
-        float currentPlayerPositionX;
-        float currentPlayerPositionY;
+        int currentPlayerPositionX;
+        int currentPlayerPositionY;
+
 
         currentPlayerPositionX = playerSprite.getPosition().x;
         currentPlayerPositionY = playerSprite.getPosition().y;
 
+
+
+        //if player is touching any edge
+        if (currentPlayerPositionX == playerTexture.getSize().x / 2 || currentPlayerPositionX == window.getSize().x - playerTexture.getSize().x / 2 || currentPlayerPositionY == playerTexture.getSize().y / 2 || currentPlayerPositionY == window.getSize().y - playerTexture.getSize().y / 2)
+        {
+            bounceCountA += 1;
+            pickUpSFX.play();
+
+            if (bounceCount1 == 9)
+            {
+                bounceCount1 = 0;
+                bounceScore1.setString("0");
+            }
+            else if (bounceCount1 < 9)
+            {
+                bounceCount1 += 1;
+                // declaring output string stream
+                std::ostringstream bounceCount1str;
+
+                // Sending a number as a stream into output
+                // string
+                bounceCount1str << bounceCount1;
+
+                // the str() converts number into string
+                std::string bounceScore1str = bounceCount1str.str();
+               
+                bounceScore1.setString(bounceScore1str);
+
+            }
+            if (bounceCountA > 9)
+            {
+                if (bounceCount2 == 9)
+                {
+                    bounceCount2 = 0;
+
+                    bounceScore2.setString("0");
+
+
+                    if (bounceCount3 == 9)
+                    {
+                        bounceCountA = 0;
+                        bounceCount3 = 0;
+                        bounceCount1 = 0;
+                        bounceCount2 = 0;
+                        bounceScore3.setString("0");
+
+                    }
+                    else if (bounceCount3 < 9)
+                    {
+                        bounceCount2 = 0;
+                        bounceCountA = 0;
+                        bounceCount3 += 1;
+
+                        // declaring output string stream
+                        std::ostringstream bounceCount3str;
+
+                        // Sending a number as a stream into output
+                        // string
+                        bounceCount3str << bounceCount3;
+
+                        // the str() converts number into string
+                        std::string bounceScore3str = bounceCount3str.str();
+
+                        bounceScore3.setString(bounceScore3str);
+
+                    }
+                }
+                else if (bounceCount2 < 9)
+                {
+                    bounceCountA = 0;
+                    bounceCount2 += 1;
+                    // declaring output string stream
+                    std::ostringstream bounceCount2str;
+
+                    // Sending a number as a stream into output
+                    // string
+                    bounceCount2str << bounceCount2;
+
+                    // the str() converts number into string
+                    std::string bounceScore2str = bounceCount2str.str();
+
+                    bounceScore2.setString(bounceScore2str);
+                }
+            }
+        
+
+        //if the direction variable is < 50
+        if (randDirection < 50)
+        {
+            //change to be above 50
+            randDirection = 100;
+        }
+        //else if the direction variable is > 50
+        else if (randDirection > 50)
+        {
+            //change to be below 50
+            randDirection = 1;
+        }
+    }
+        
+
+
+            //run x direction
+            if (randDirection <= 50)
+            {
+                playerMoveRangeX = -20;
+            }
+            else if (randDirection >= 49)
+            {
+                playerMoveRangeX = 20;
+            }
+            else
+            {
+                playerMoveRangeX = 0;
+            }
+
+            //run y direction
+            if (randDirection >= 50)
+            {
+                playerMoveRangeY = -20;
+            }
+            else if (randDirection <= 49)
+            {
+                playerMoveRangeY = 20;
+            }
+            else
+            {
+                playerMoveRangeY = 0;
+
+            }
+            bounceScore3.setPosition(180.0f, 0.0f);
+            bounceScore2.setPosition(210.0f, 0.0f);
+            bounceScore1.setPosition(240.0f,0.0f);
+
+
+        playerSprite.setPosition(sf::Vector2f(currentPlayerPositionX + playerMoveRangeX, currentPlayerPositionY + playerMoveRangeX));
+
+
+        //Setting score values per frame
+        //Loop to check current score
        
-
-       //playerSprite.setPosition(sf::Vector2f(rand() % (currentPlayerPositionX + playerMoveRangeX), rand() % (currentPlayerPositionY + playerMoveRangeY)));
-        */
-
 
 #pragma endregion
         //end updates
@@ -261,6 +403,12 @@ int main()
 
         //text UI
         window.draw(scoreLabel);
+
+        //score counter UI
+        window.draw(bounceScore1);
+        window.draw(bounceScore2);
+        window.draw(bounceScore3);
+
 
         window.draw(gameTitle);
 
