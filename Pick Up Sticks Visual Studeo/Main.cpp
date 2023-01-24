@@ -6,6 +6,7 @@
 #include <time.h>
 #include <sstream>
 #include <string>
+#include <cmath>
 
 int main()
 {
@@ -17,12 +18,19 @@ int main()
 
     srand(time(NULL));
 
-    int playerMoveRangeX;
-    int playerMoveRangeY;
+    //int playerMoveRangeX;
+    //int playerMoveRangeY;
 
-    int randDirection;
+    //int randDirection;
 
-    randDirection = rand() % (100 - 1);
+    //randDirection = rand() % (100 - 1);
+
+    float xDir = (10 - rand() % 21) / 10.0f;
+    float yDir = (10 - rand() % 21) / 10.0f;
+
+    sf::Vector2f direction(xDir, yDir);
+
+    bool blinkPressedPrev = false;
 
     sf::Texture playerTexture;
     if (!playerTexture.loadFromFile("Assets/Player_Stand.png"))
@@ -113,7 +121,7 @@ int main()
 
 
     //player position
-    playerSprite.setPosition(sf::Vector2f(0.0f + (100.0f + playerTexture.getSize().x / 2.0f), 100.0f + (playerTexture.getSize().y / 2.0f)));
+    playerSprite.setPosition(sf::Vector2f(0.0f + (400.0f + playerTexture.getSize().x / 2.0f), 400.0f + (playerTexture.getSize().y / 2.0f)));
 
     
     //count bounces
@@ -228,6 +236,78 @@ int main()
 
 #pragma region Updates
 
+        //Player 1 controller
+        int player1Controller = 1;
+
+        direction.x = 0;
+        direction.y = 0;
+
+        if (sf::Joystick::isConnected(player1Controller))
+        {
+
+            float axisX = sf::Joystick::getAxisPosition(player1Controller, sf::Joystick::X);
+            float axisY = sf::Joystick::getAxisPosition(player1Controller, sf::Joystick::Y);
+
+            float deadzone = 10;
+
+            if (abs(axisX > deadzone))
+            {
+                direction.x = axisX / 100.0f;
+            }
+            if (abs(axisY > deadzone))
+            {
+                direction.y = axisY/ 100.0f;
+            }
+
+
+            direction.x = sf::Joystick::getAxisPosition(player1Controller, sf::Joystick::X)/100.0f;
+            direction.y = sf::Joystick::getAxisPosition(player1Controller, sf::Joystick::Y)/100.0f;
+
+        }
+
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+        {
+            direction.x = -1;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+        {
+            direction.x = 1;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+        {
+            direction.y = -1;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+        {
+            direction.y = 1;
+        }
+
+        sf::Vector2f newPostion = playerSprite.getPosition() + direction;
+        playerSprite.setPosition(newPostion);
+
+        bool blinkPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || sf::Joystick::isButtonPressed(player1Controller, 0);
+
+        if (blinkPressed && !blinkPressedPrev)
+        {
+            sf::Vector2f blinkPostion = playerSprite.getPosition() + direction * 100.0f;
+            playerSprite.setPosition(blinkPostion);
+        }
+
+        blinkPressedPrev = blinkPressed;
+
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+        {
+            sf::Vector2i localPosition = sf::Mouse::getPosition(window);
+            sf::Vector2f mousePositionFloat = (sf::Vector2f)localPosition;
+
+
+            stickSprite.setPosition(mousePositionFloat);
+            stickSprite.setRotation(rand() % (355 - 1));
+            stickSpriteVector.push_back(stickSprite);
+        }
+
+        /*
         //move in random direction
         int currentPlayerPositionX;
         int currentPlayerPositionY;
@@ -235,11 +315,11 @@ int main()
 
         currentPlayerPositionX = playerSprite.getPosition().x;
         currentPlayerPositionY = playerSprite.getPosition().y;
-
+        */
 
 
         //if player is touching any edge
-        if (currentPlayerPositionX == playerTexture.getSize().x / 2 || currentPlayerPositionX == window.getSize().x - playerTexture.getSize().x / 2 || currentPlayerPositionY == playerTexture.getSize().y / 2 || currentPlayerPositionY == window.getSize().y - playerTexture.getSize().y / 2)
+        /*if (currentPlayerPositionX == playerTexture.getSize().x / 2 || currentPlayerPositionX == window.getSize().x - playerTexture.getSize().x / 2 || currentPlayerPositionY == playerTexture.getSize().y / 2 || currentPlayerPositionY == window.getSize().y - playerTexture.getSize().y / 2)
         {
             bounceCountA += 1;
             pickUpSFX.play();
@@ -320,9 +400,9 @@ int main()
                     bounceScore2.setString(bounceScore2str);
                 }
             }
-        
+        */
 
-        //if the direction variable is < 50
+        /*if the direction variable is < 50
         if (randDirection < 50)
         {
             //change to be above 50
@@ -372,7 +452,7 @@ int main()
 
 
         playerSprite.setPosition(sf::Vector2f(currentPlayerPositionX + playerMoveRangeX, currentPlayerPositionY + playerMoveRangeX));
-
+        */
 
         //Setting score values per frame
         //Loop to check current score
