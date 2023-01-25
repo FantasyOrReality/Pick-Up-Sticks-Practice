@@ -8,6 +8,14 @@
 #include <string>
 #include <cmath>
 
+//Like a type
+enum GameState
+{
+    RUNNING,        //RUNNING = 0;
+    GAME_OVER,      //GAME_OVER = 1;
+    NUM_GAME_STATES
+};
+
 int main()
 {
 #pragma region Setup
@@ -15,6 +23,9 @@ int main()
 
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "Pick Up Sticks", sf::Style::None);
     window.setVerticalSyncEnabled(true);
+
+    GameState currentState = RUNNING; //assign the value 0 to gameRunning
+    bool restartButtonPressed;
 
     srand(time(NULL));
 
@@ -163,26 +174,62 @@ int main()
     float textWidth = gameTitle.getLocalBounds().width;
     gameTitle.setPosition((float)window.getSize().x / 2.0f - textWidth / 2.0f, 10.0f);
 
+    sf::Text timerText;
+    timerText.setFont(gameFont);
+    timerText.setString("Time Left: ");
 
+    timerText.setFillColor(sf::Color::Black);
+    timerText.setOutlineThickness(1.0f);
+    timerText.setOutlineColor(sf::Color::White);
+    timerText.setStyle(sf::Text::Bold | sf::Text::Italic);
+    timerText.setCharacterSize(30);
+
+    timerText.setPosition((float)window.getSize().x - 500.0f, 10.0f);
+
+    sf::Text gameOverText;
+    gameOverText.setFont(gameFont);
+    gameOverText.setString("Game over!");
+
+    gameOverText.setFillColor(sf::Color::Black);
+    gameOverText.setOutlineThickness(1.0f);
+    gameOverText.setOutlineColor(sf::Color::White);
+    gameOverText.setStyle(sf::Text::Bold | sf::Text::Italic);
+    gameOverText.setCharacterSize(30);
+
+    textWidth = gameOverText.getLocalBounds().width;
+    gameOverText.setPosition((float)window.getSize().x/2.0f - textWidth/2.0f, (float)window.getSize().y / 2.0f - 300);
+
+    sf::Text restartText;
+    restartText.setFont(gameFont);
+    restartText.setString("Press Enter to restart");
+
+    restartText.setFillColor(sf::Color::Black);
+    restartText.setOutlineThickness(1.0f);
+    restartText.setOutlineColor(sf::Color::White);
+    restartText.setStyle(sf::Text::Bold | sf::Text::Italic);
+    restartText.setCharacterSize(30);
+
+    textWidth = restartText.getLocalBounds().width;
+    restartText.setPosition((float)window.getSize().x / 2.0f - textWidth / 2.0f, (float)window.getSize().y / 2.0f + 100);
 
     sf::Text scoreLabel;
 
-    sf::Text bounceScore1;
-    sf::Text bounceScore2;
-    sf::Text bounceScore3;
+    sf::Text scoreValue1;
+    sf::Text scoreValue2;
+    sf::Text scoreValue3;
 
     scoreLabel.setFont(gameFont);
 
-    bounceScore1.setFont(gameFont);
-    bounceScore2.setFont(gameFont);
-    bounceScore3.setFont(gameFont);
+    scoreValue1.setFont(gameFont);
+    scoreValue2.setFont(gameFont);
+    scoreValue3.setFont(gameFont);
 
 
 
     //Score numbers will be presented like: |score3|score2|score1|
-    bounceScore1.setString("0");
-    bounceScore2.setString("0");
-    bounceScore3.setString("0");
+    scoreValue1.setString("0");
+    scoreValue2.setString("0");
+    scoreValue3.setString("0");
 
 
     scoreLabel.setString("Score:");
@@ -207,6 +254,15 @@ int main()
     gameMusic.setLoop(true);
     gameMusic.play();
 
+    //Setting up clocks and time
+    sf::Clock deltaTimeClock;
+    sf::Clock overallTimeClock;
+
+    sf::Clock gameTimer;
+    float gameDuration = 5.0f; //how long the game lasts
+
+    sf::Clock stickSpawnCooldown;
+    float stickSpawnRate = 1.0f;
 
 #pragma endregion
     //end setup
@@ -236,224 +292,288 @@ int main()
 
 #pragma region Updates
 
+        //Get time
+        sf::Time deltaTime = deltaTimeClock.restart();
+        sf::Time totalTime = overallTimeClock.getElapsedTime();
+
+        //game timer
+        float gameTimeFloat = gameTimer.getElapsedTime().asSeconds();
+        float remainingTimeFloat = gameDuration - gameTimeFloat;
+        std::string timerString = "Time Left: ";
+        timerString += std::to_string((int)ceil(remainingTimeFloat));
+
+        //display time passed this game
+        timerText.setString(timerString);
+
+        if (remainingTimeFloat <= 0.0f)
+        {
+            currentState = GAME_OVER;
+
+        }
+        else
+        {
+            currentState = RUNNING;
+        }
         //Player 1 controller
         int player1Controller = 1;
 
         direction.x = 0;
         direction.y = 0;
-
-        if (sf::Joystick::isConnected(player1Controller))
+        if (currentState == RUNNING)
         {
-
-            float axisX = sf::Joystick::getAxisPosition(player1Controller, sf::Joystick::X);
-            float axisY = sf::Joystick::getAxisPosition(player1Controller, sf::Joystick::Y);
-
-            float deadzone = 10;
-
-            if (abs(axisX > deadzone))
+            if (sf::Joystick::isConnected(player1Controller))
             {
-                direction.x = axisX / 100.0f;
-            }
-            if (abs(axisY > deadzone))
-            {
-                direction.y = axisY/ 100.0f;
-            }
 
+                float axisX = sf::Joystick::getAxisPosition(player1Controller, sf::Joystick::X);
+                float axisY = sf::Joystick::getAxisPosition(player1Controller, sf::Joystick::Y);
 
-            direction.x = sf::Joystick::getAxisPosition(player1Controller, sf::Joystick::X)/100.0f;
-            direction.y = sf::Joystick::getAxisPosition(player1Controller, sf::Joystick::Y)/100.0f;
+                float deadzone = 10;
 
-        }
-
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-        {
-            direction.x = -1;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-        {
-            direction.x = 1;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-        {
-            direction.y = -1;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-        {
-            direction.y = 1;
-        }
-
-        sf::Vector2f newPostion = playerSprite.getPosition() + direction;
-        playerSprite.setPosition(newPostion);
-
-        bool blinkPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || sf::Joystick::isButtonPressed(player1Controller, 0);
-
-        if (blinkPressed && !blinkPressedPrev)
-        {
-            sf::Vector2f blinkPostion = playerSprite.getPosition() + direction * 100.0f;
-            playerSprite.setPosition(blinkPostion);
-        }
-
-        blinkPressedPrev = blinkPressed;
-
-        if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
-        {
-            sf::Vector2i localPosition = sf::Mouse::getPosition(window);
-            sf::Vector2f mousePositionFloat = (sf::Vector2f)localPosition;
-
-
-            stickSprite.setPosition(mousePositionFloat);
-            stickSprite.setRotation(rand() % (355 - 1));
-            stickSpriteVector.push_back(stickSprite);
-        }
-
-        /*
-        //move in random direction
-        int currentPlayerPositionX;
-        int currentPlayerPositionY;
-
-
-        currentPlayerPositionX = playerSprite.getPosition().x;
-        currentPlayerPositionY = playerSprite.getPosition().y;
-        */
-
-
-        //if player is touching any edge
-        /*if (currentPlayerPositionX == playerTexture.getSize().x / 2 || currentPlayerPositionX == window.getSize().x - playerTexture.getSize().x / 2 || currentPlayerPositionY == playerTexture.getSize().y / 2 || currentPlayerPositionY == window.getSize().y - playerTexture.getSize().y / 2)
-        {
-            bounceCountA += 1;
-            pickUpSFX.play();
-
-            if (bounceCount1 == 9)
-            {
-                bounceCount1 = 0;
-                bounceScore1.setString("0");
-            }
-            else if (bounceCount1 < 9)
-            {
-                bounceCount1 += 1;
-                // declaring output string stream
-                std::ostringstream bounceCount1str;
-
-                // Sending a number as a stream into output
-                // string
-                bounceCount1str << bounceCount1;
-
-                // the str() converts number into string
-                std::string bounceScore1str = bounceCount1str.str();
-               
-                bounceScore1.setString(bounceScore1str);
-
-            }
-            if (bounceCountA > 9)
-            {
-                if (bounceCount2 == 9)
+                if (abs(axisX > deadzone))
                 {
-                    bounceCount2 = 0;
-
-                    bounceScore2.setString("0");
-
-
-                    if (bounceCount3 == 9)
-                    {
-                        bounceCountA = 0;
-                        bounceCount3 = 0;
-                        bounceCount1 = 0;
-                        bounceCount2 = 0;
-                        bounceScore3.setString("0");
-
-                    }
-                    else if (bounceCount3 < 9)
-                    {
-                        bounceCount2 = 0;
-                        bounceCountA = 0;
-                        bounceCount3 += 1;
-
-                        // declaring output string stream
-                        std::ostringstream bounceCount3str;
-
-                        // Sending a number as a stream into output
-                        // string
-                        bounceCount3str << bounceCount3;
-
-                        // the str() converts number into string
-                        std::string bounceScore3str = bounceCount3str.str();
-
-                        bounceScore3.setString(bounceScore3str);
-
-                    }
+                    direction.x = axisX / 100.0f;
                 }
-                else if (bounceCount2 < 9)
+                if (abs(axisY > deadzone))
                 {
-                    bounceCountA = 0;
-                    bounceCount2 += 1;
+                    direction.y = axisY / 100.0f;
+                }
+
+
+                direction.x = sf::Joystick::getAxisPosition(player1Controller, sf::Joystick::X) / 100.0f;
+                direction.y = sf::Joystick::getAxisPosition(player1Controller, sf::Joystick::Y) / 100.0f;
+
+            }
+
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+            {
+                direction.x = -1;
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+            {
+                direction.x = 1;
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+            {
+                direction.y = -1;
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+            {
+                direction.y = 1;
+            }
+
+
+
+            //Update player position based on movement direction
+            float speed = 500;
+            // velocity = direction *speed
+            sf::Vector2f velocity = direction * speed;
+            // distance traveled = velocity*time
+            sf::Vector2f distance = velocity * deltaTime.asSeconds();
+
+            sf::Vector2f newPostion = playerSprite.getPosition() + distance;
+            playerSprite.setPosition(newPostion);
+
+            bool blinkPressed = sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || sf::Joystick::isButtonPressed(player1Controller, 0);
+
+            if (blinkPressed && !blinkPressedPrev)
+            {
+                sf::Vector2f blinkPostion = playerSprite.getPosition() + direction * 100.0f;
+                playerSprite.setPosition(blinkPostion);
+            }
+
+            blinkPressedPrev = blinkPressed;
+
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+            {
+                sf::Vector2i localPosition = sf::Mouse::getPosition(window);
+                sf::Vector2f mousePositionFloat = (sf::Vector2f)localPosition;
+
+
+                stickSprite.setPosition(mousePositionFloat);
+                stickSprite.setRotation(rand() % (355 - 1));
+                stickSpriteVector.push_back(stickSprite);
+            }
+
+            if (stickSpawnCooldown.getElapsedTime().asSeconds() >= stickSpawnRate)
+            {
+                stickSpawnCooldown.restart();
+                stickSprite.setPosition(sf::Vector2f(rand() % (window.getSize().x - stickTexture.getSize().x / 2), rand() % (window.getSize().y - stickTexture.getSize().y / 2)));
+                stickSprite.setRotation(rand() % (355 - 1));
+
+                stickSpriteVector.push_back(stickSprite);
+            }
+
+
+
+            /*
+            //move in random direction
+            int currentPlayerPositionX;
+            int currentPlayerPositionY;
+
+
+            currentPlayerPositionX = playerSprite.getPosition().x;
+            currentPlayerPositionY = playerSprite.getPosition().y;
+            */
+
+
+            //if player is touching any edge
+            /*if (currentPlayerPositionX == playerTexture.getSize().x / 2 || currentPlayerPositionX == window.getSize().x - playerTexture.getSize().x / 2 || currentPlayerPositionY == playerTexture.getSize().y / 2 || currentPlayerPositionY == window.getSize().y - playerTexture.getSize().y / 2)
+            {
+                bounceCountA += 1;
+                pickUpSFX.play();
+
+                if (bounceCount1 == 9)
+                {
+                    bounceCount1 = 0;
+                    bounceScore1.setString("0");
+                }
+                else if (bounceCount1 < 9)
+                {
+                    bounceCount1 += 1;
                     // declaring output string stream
-                    std::ostringstream bounceCount2str;
+                    std::ostringstream bounceCount1str;
 
                     // Sending a number as a stream into output
                     // string
-                    bounceCount2str << bounceCount2;
+                    bounceCount1str << bounceCount1;
 
                     // the str() converts number into string
-                    std::string bounceScore2str = bounceCount2str.str();
+                    std::string bounceScore1str = bounceCount1str.str();
 
-                    bounceScore2.setString(bounceScore2str);
+                    bounceScore1.setString(bounceScore1str);
+
                 }
-            }
-        */
+                if (bounceCountA > 9)
+                {
+                    if (bounceCount2 == 9)
+                    {
+                        bounceCount2 = 0;
 
-        /*if the direction variable is < 50
-        if (randDirection < 50)
-        {
-            //change to be above 50
-            randDirection = 100;
+                        bounceScore2.setString("0");
+
+
+                        if (bounceCount3 == 9)
+                        {
+                            bounceCountA = 0;
+                            bounceCount3 = 0;
+                            bounceCount1 = 0;
+                            bounceCount2 = 0;
+                            bounceScore3.setString("0");
+
+                        }
+                        else if (bounceCount3 < 9)
+                        {
+                            bounceCount2 = 0;
+                            bounceCountA = 0;
+                            bounceCount3 += 1;
+
+                            // declaring output string stream
+                            std::ostringstream bounceCount3str;
+
+                            // Sending a number as a stream into output
+                            // string
+                            bounceCount3str << bounceCount3;
+
+                            // the str() converts number into string
+                            std::string bounceScore3str = bounceCount3str.str();
+
+                            bounceScore3.setString(bounceScore3str);
+
+                        }
+                    }
+                    else if (bounceCount2 < 9)
+                    {
+                        bounceCountA = 0;
+                        bounceCount2 += 1;
+                        // declaring output string stream
+                        std::ostringstream bounceCount2str;
+
+                        // Sending a number as a stream into output
+                        // string
+                        bounceCount2str << bounceCount2;
+
+                        // the str() converts number into string
+                        std::string bounceScore2str = bounceCount2str.str();
+
+                        bounceScore2.setString(bounceScore2str);
+                    }
+                }
+            */
+
+            /*if the direction variable is < 50
+            if (randDirection < 50)
+            {
+                //change to be above 50
+                randDirection = 100;
+            }
+            //else if the direction variable is > 50
+            else if (randDirection > 50)
+            {
+                //change to be below 50
+                randDirection = 1;
+            }
         }
-        //else if the direction variable is > 50
-        else if (randDirection > 50)
-        {
-            //change to be below 50
-            randDirection = 1;
+
+
+
+                //run x direction
+                if (randDirection <= 50)
+                {
+                    playerMoveRangeX = -20;
+                }
+                else if (randDirection >= 49)
+                {
+                    playerMoveRangeX = 20;
+                }
+                else
+                {
+                    playerMoveRangeX = 0;
+                }
+
+                //run y direction
+                if (randDirection >= 50)
+                {
+                    playerMoveRangeY = -20;
+                }
+                else if (randDirection <= 49)
+                {
+                    playerMoveRangeY = 20;
+                }
+                else
+                {
+                    playerMoveRangeY = 0;
+
+                }
+
+
+
+            playerSprite.setPosition(sf::Vector2f(currentPlayerPositionX + playerMoveRangeX, currentPlayerPositionY + playerMoveRangeX));
+            */
         }
-    }
         
+       
+        
+        if (currentState == GAME_OVER)
+        {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
+            {
+                currentState = RUNNING;
+                stickSpriteVector.clear();
+                gameTimer.restart();
+                playerSprite.setPosition(sf::Vector2f(0.0f + (400.0f + playerTexture.getSize().x / 2.0f), 400.0f + (playerTexture.getSize().y / 2.0f)));
 
-
-            //run x direction
-            if (randDirection <= 50)
-            {
-                playerMoveRangeX = -20;
-            }
-            else if (randDirection >= 49)
-            {
-                playerMoveRangeX = 20;
-            }
-            else
-            {
-                playerMoveRangeX = 0;
             }
 
-            //run y direction
-            if (randDirection >= 50)
-            {
-                playerMoveRangeY = -20;
-            }
-            else if (randDirection <= 49)
-            {
-                playerMoveRangeY = 20;
-            }
-            else
-            {
-                playerMoveRangeY = 0;
+            //Check if player is colliding with sticks
+            //TODO: Next week
 
-            }
-            bounceScore3.setPosition(180.0f, 0.0f);
-            bounceScore2.setPosition(210.0f, 0.0f);
-            bounceScore1.setPosition(240.0f,0.0f);
+        }
 
 
-        playerSprite.setPosition(sf::Vector2f(currentPlayerPositionX + playerMoveRangeX, currentPlayerPositionY + playerMoveRangeX));
-        */
-
+        scoreValue3.setPosition(180.0f, 0.0f);
+        scoreValue2.setPosition(210.0f, 0.0f);
+        scoreValue1.setPosition(240.0f, 0.0f);
         //Setting score values per frame
         //Loop to check current score
        
@@ -485,13 +605,20 @@ int main()
         window.draw(scoreLabel);
 
         //score counter UI
-        window.draw(bounceScore1);
-        window.draw(bounceScore2);
-        window.draw(bounceScore3);
+        window.draw(scoreValue1);
+        window.draw(scoreValue2);
+        window.draw(scoreValue3);
 
 
         window.draw(gameTitle);
+        window.draw(timerText);
 
+        if (!currentState)
+        {
+            window.draw(gameOverText);
+            window.draw(restartText);
+
+        }
         //display
         window.display();
 
